@@ -2,6 +2,7 @@ import './App.css';
 import styled from 'styled-components';
 import { Routes, Route } from 'react-router-dom';
 import Home from './pages/Home';
+import Crop from './pages/Crop';
 
 function App() {
     return (
@@ -10,6 +11,7 @@ function App() {
                 <InnerContainer>
                     <Routes>
                         <Route path='/' element={<Home />} />
+                        <Route path='/crop' element={<Crop />} />
                     </Routes>
                 </InnerContainer>
             </OutterContainer>

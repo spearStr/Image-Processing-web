@@ -1,6 +1,6 @@
 const requests = {
     // api
-    fetchPlan: '/plan',
+    fetchUpload: '/upload',
 };
 
 export default requests;

@@ -1,14 +1,29 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import '../styles/UploadImage.css';
 import axios from '../api/axios';
 import styled from 'styled-components';
 import { useNavigate } from 'react-router-dom';
+import { useLocation } from 'react-router-dom';
 
-const UploadImage = () => {
+const CropImage = () => {
     const [imageSrc, setImageSrc] = useState(null);
+    const [image, setImage] = useState(null);
+    const location = useLocation();
+    const imageInfo = { ...location.state };
 
     const navigate = useNavigate();
 
+    const asciiToBlob = (asciiString) => {
+        const byteCharacters = atob(asciiString);
+        const byteNumbers = new Array(byteCharacters.length);
+
+        for (let i = 0; i < byteCharacters.length; i++) {
+            byteNumbers[i] = byteCharacters.charCodeAt(i);
+        }
+
+        const byteArray = new Uint8Array(byteNumbers);
+        return new Blob([byteArray], { type: 'image/jpeg' }); // Adjust the type according to your image format
+    };
     const readURL = (input) => {
         if (input.files && input.files[0]) {
             const reader = new FileReader();
@@ -21,32 +36,18 @@ const UploadImage = () => {
         }
     };
 
-    const removeUpload = () => {
-        setImageSrc(null);
-    };
-
     const handleSubmit = async () => {
-        // check if image is uploaded
-        if (!imageSrc) {
-            console.error('No image uploaded');
-            return;
-        }
-
         try {
             // FormData : create object and add image
             const formData = new FormData();
-            formData.append('file', dataURItoBlob(imageSrc), 'example.png');
+            formData.append('image', dataURItoBlob(imageSrc));
 
             // upload image to server
-            const response = await axios.post('/upload', formData, {
-                headers: {
-                    "Content-Type" : "multipart/form-data",
-                } 
-            });
+            const response = await axios.post('/upload', formData);
 
             // print uploaded image's URL to console
-            console.log('Uploaded Image URL:', typeof(response.data.Image));
-            navigate('/crop', { state: { image: response.data.Image, coordinates: response.data.boxes } });
+            console.log('Uploaded Image URL:', response.data.imageUrl);
+            navigate('/crop');
         } catch (error) {
             console.error('Image upload error', error);
         }
@@ -66,51 +67,25 @@ const UploadImage = () => {
         return new Blob([ab], { type: mimeString });
     };
 
-    const removeContainer = () => (
-        <FileUploadContent>
-            <FileUploadImage src={imageSrc} alt='your image' />
-            <div className='image-title-wrap'>
-                <RemoveImageButton onClick={removeUpload}>
-                    Remove Image
-                </RemoveImageButton>
-            </div>
-        </FileUploadContent>
-    );
-
-    const renderContainer = () => (
-        <ImageUploadWrap>
-            <FileUploadInput
-                className='file-upload-input'
-                type='file'
-                onChange={(e) => readURL(e.target)}
-                accept='image/*'
-                encType="multipart/form-data"
-            />
-            <DragText>
-                <DragTextH3>
-                    Drag and drop a file or select add Image
-                </DragTextH3>
-            </DragText>
-        </ImageUploadWrap>
-    );
+    useEffect(() => {
+        const blob = asciiToBlob(imageInfo.image);
+        setImage(blob);
+    }, []);
 
     return (
         <FileUploadContainer>
-            <UploadButton
-                type='button'
-                onClick={() =>
-                    document.querySelector('.file-upload-input').click()
-                }
-            >
-                Add Image
-            </UploadButton>
-            {imageSrc ? removeContainer() : renderContainer()}
+            {image && (
+                <FileUploadImage
+                    src={URL.createObjectURL(asciiToBlob(imageInfo.image))}
+                    alt='image'
+                />
+            )}
             <UploadButton onClick={handleSubmit}>Submit Image</UploadButton>
         </FileUploadContainer>
     );
 };
 
-export default UploadImage;
+export default CropImage;
 
 const FileUploadContainer = styled.div`
     display: flex;
@@ -173,43 +148,6 @@ const ImageUploadWrap = styled.div`
         background-color: #1fb264;
         border: 4px dashed #ffffff;
     }
-`;
-
-const RemoveImageButton = styled.button`
-    width: 20rem;
-    margin: 0;
-    color: #fff;
-    background: #cd4535;
-    border: none;
-    padding: 1rem;
-    border-radius: 4px;
-    border-bottom: 4px solid #b02818;
-    transition: all 0.2s ease;
-    outline: none;
-    text-transform: uppercase;
-    font-weight: 700;
-
-    &:hover {
-        background: #c13b2a;
-        color: #ffffff;
-        cursor: pointer;
-        transition: all 0.2s ease;
-    }
-
-    &:active {
-        border: 0;
-        transition: all 0.2s ease;
-    }
-`;
-
-const DragText = styled.div`
-    text-align: center;
-`;
-
-const DragTextH3 = styled.h3`
-    font-weight: 100;
-    color: #15824b;
-    padding: 5rem 0;
 `;
 
 const FileUploadImage = styled.img`
