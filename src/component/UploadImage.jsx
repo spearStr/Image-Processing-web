@@ -61,7 +61,7 @@ const UploadImage = () => {
                     'Content-Type': 'multipart/form-data',
                 },
             });
-            
+
             // print uploaded image's URL to console
             console.log('Uploaded Image URL:', response);
             navigate('/crop', {
@@ -121,14 +121,16 @@ const UploadImage = () => {
 
     return (
         <FileUploadContainer>
-            <UploadButton
-                type='button'
-                onClick={() =>
-                    document.querySelector('.file-upload-input').click()
-                }
-            >
-                Add Image
-            </UploadButton>
+            {!imageSrc && (
+                <UploadButton
+                    type='button'
+                    onClick={() =>
+                        document.querySelector('.file-upload-input').click()
+                    }
+                >
+                    Add Image
+                </UploadButton>
+            )}
             {imageSrc ? removeContainer() : renderContainer()}
             <UploadButton onClick={handleSubmit}>Submit Image</UploadButton>
         </FileUploadContainer>
