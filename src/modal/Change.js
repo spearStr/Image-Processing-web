@@ -1,13 +1,11 @@
-import axios from '../api/axios';
 import React, { useState } from 'react';
 import { styled } from 'styled-components';
-import requests from '../api/requests';
 import { IoClose } from 'react-icons/io5';
 import Swal from 'sweetalert2';
 import SelectNumber from '../component/SelectNumber';
 import SelectContent from '../component/SelectContent';
 
-const Change = ({ setChangeModalOpen, onSave, imageInfo }) => {
+const Change = ({ setChangeModalOpen, onSave, imageInfo, selectedFaces }) => {
     const [mode, setMode] = useState('');
     const [number, setNumber] = useState(0);
 
@@ -23,7 +21,16 @@ const Change = ({ setChangeModalOpen, onSave, imageInfo }) => {
                 title: 'Invalid Value',
                 text: 'Select A Value Both Number and Mode Correctly',
             });
-            console.log("invalid");
+            console.log('invalid');
+        } else if (
+            selectedFaces.some((face) => face.number === newInfo.number)
+        ) {
+            Swal.fire({
+                icon: 'error',
+                title: 'Duplicated Number',
+                text: 'Select Another Number Because Of Duplication',
+            });
+            console.log('duplicated');
         } else {
             onSave(newInfo);
             setMode('');
@@ -67,7 +74,6 @@ const Change = ({ setChangeModalOpen, onSave, imageInfo }) => {
 
 export default Change;
 
-
 const AddOptionContainer = styled.div`
     display: flex;
     margin-bottom: 1rem;
@@ -78,7 +84,6 @@ const AddOptionContainer = styled.div`
 
 const InputContainer = styled.div`
     display: flex;
-    margin-bottom: 0.5rem;
     align-items: center;
 `;
 

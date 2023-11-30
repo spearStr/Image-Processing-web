@@ -4,6 +4,7 @@ import axios from '../api/axios';
 import styled from 'styled-components';
 import { useNavigate } from 'react-router-dom';
 import { useLocation } from 'react-router-dom';
+import { IoClose } from 'react-icons/io5';
 import Swal from 'sweetalert2';
 import requests from '../api/requests';
 import Change from '../modal/Change';
@@ -36,6 +37,8 @@ const CropImage = () => {
 
     const location = useLocation();
     const imageInfo = { ...location.state };
+    const minNum =
+        imageInfo.coordinates.length > 3 ? 3 : imageInfo.coordinates.length;
 
     const navigate = useNavigate();
 
@@ -85,15 +88,22 @@ const CropImage = () => {
         try {
             const cropInfo = selectedFaces;
             console.log(selectedFaces);
-            // const cropInfo = [
-            //     { number: 0, change: 'pouting', box: imageInfo.coordinates[0] },
-            //     {
-            //         number: 1,
-            //         change: 'big_laugh',
-            //         box: imageInfo.coordinates[1],
-            //     },
-            //     { number: 2, change: 'sad', box: imageInfo.coordinates[2] },
-            // ];
+            if (selectedFaces.length === 0) {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'No Input Value',
+                    text: 'Input Value At Least One',
+                });
+                throw new Error('No Input Value');
+            }
+            if (selectedFaces.length > 3) {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Too Much Input Value',
+                    text: 'Input Value Maximum Number is 3',
+                });
+                throw new Error('Too Much Value');
+            }
             let timerInterval;
             Swal.fire({
                 title: 'Analyzing Face Detection...',
@@ -124,7 +134,7 @@ const CropImage = () => {
                 },
             });
         } catch (error) {
-            console.error('Image upload error', error);
+            console.error('error', error);
         }
     };
 
@@ -134,6 +144,12 @@ const CropImage = () => {
 
     const handleSaveOption = (option) => {
         setSelectedFaces((prev) => [...prev, option]);
+    };
+
+    const handleRemove = (number) => {
+        setSelectedFaces((prev) =>
+            prev.filter((option) => option.number !== number)
+        );
     };
 
     useEffect(() => {
@@ -150,20 +166,27 @@ const CropImage = () => {
                 />
             )}
             {changeModalOpen && (
-                <Change setChangeModalOpen={setChangeModalOpen} onSave={handleSaveOption} imageInfo={imageInfo}/>
+                <Change
+                    setChangeModalOpen={setChangeModalOpen}
+                    onSave={handleSaveOption}
+                    imageInfo={imageInfo}
+                    selectedFaces={selectedFaces}
+                />
             )}
-            {selectedFaces.length > 0 && (
-                <SelectedFacesContainer>
-                    <h2>Selected Info</h2>
-                    <ul>
-                        {selectedFaces.map((face) => (
-                            <li key={face.number}>
-                                Number: {face.number} Mode: {face.change}
-                            </li>
-                        ))}
-                    </ul>
-                </SelectedFacesContainer>
-            )}
+            <SelectedFacesContainer>
+                <h2>Selected Information</h2>
+                <BorderLine></BorderLine>
+                {selectedFaces.map((face) => (
+                    <div key={face.number}>
+                        <p>Number: {face.number}</p>
+                        <p>Mode: {face.change}</p>
+                        <IoClose
+                            size={'2rem'}
+                            onClick={() => handleRemove(face.number)}
+                        />
+                    </div>
+                ))}
+            </SelectedFacesContainer>
             <ButtonContainer>
                 {!changeModalOpen && (
                     <UploadButton onClick={handleAdd}>Add Option</UploadButton>
@@ -177,27 +200,29 @@ const CropImage = () => {
 export default CropImage;
 
 const SelectedFacesContainer = styled.div`
-    margin-top: 1rem;
-    border: 1px solid #ccc;
-    padding: 1rem;
+    margin-bottom: 1rem;
+    border: none;
+    /* padding: 1rem; */
     border-radius: 4px;
+    background-color: #a9def9;
 
     h2 {
-        font-size: 1.2rem;
-        margin-bottom: 0.5rem;
+        font-size: larger;
     }
 
-    ul {
-        list-style: none;
-        padding: 0;
-        margin: 0;
-    }
-
-    li {
-        margin-bottom: 0.5rem;
-        
+    div {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        gap: 2rem;
     }
 `;
+
+const BorderLine = styled.div`
+    height: 0.1rem;
+    background-color: black;
+    margin: 0.5rem 3rem;
+`
 
 const FileUploadContainer = styled.div`
     display: flex;
@@ -233,22 +258,6 @@ const UploadButton = styled.button`
         border: 0;
         transition: all 0.2s ease;
     }
-`;
-
-const FileUploadContent = styled.div`
-    text-align: center;
-    width: 100%;
-`;
-
-const FileUploadInput = styled.input`
-    position: absolute;
-    margin: 0;
-    padding: 0;
-    width: 100%;
-    height: 100%;
-    outline: none;
-    opacity: 0;
-    cursor: pointer;
 `;
 
 const FileUploadImage = styled.img`
