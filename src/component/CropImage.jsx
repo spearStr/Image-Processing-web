@@ -7,7 +7,6 @@ import { useLocation } from 'react-router-dom';
 import Swal from 'sweetalert2';
 import requests from '../api/requests';
 import Change from '../modal/Change';
-import Option from './Option';
 
 function findIndexOfRectangle(rectangles, point) {
     // rectangles: [[x1, y1, x2, y2], [x1, y1, x2, y2], ...], point: [x, y]
@@ -33,14 +32,10 @@ function findIndexOfRectangle(rectangles, point) {
 const CropImage = () => {
     const [image, setImage] = useState(null);
     const [selectedFaces, setSelectedFaces] = useState([]);
-    const [selectedFaceIndex, setSelectedFaceIndex] = useState(null);
-    const [addOptionComponents, setAddOptionComponents] = useState([]);
-    const [addCount, setAddCount] = useState(0);
+    const [changeModalOpen, setChangeModalOpen] = useState(false);
 
     const location = useLocation();
     const imageInfo = { ...location.state };
-    const minNum =
-        3 > imageInfo.coordinates.length ? imageInfo.coordinates.length : 3;
 
     const navigate = useNavigate();
 
@@ -88,16 +83,17 @@ const CropImage = () => {
 
     const handleSubmit = async () => {
         try {
-            //const cropInfo = selectedFaces;
-            const cropInfo = [
-                { number: 0, change: 'pouting', box: imageInfo.coordinates[0] },
-                {
-                    number: 1,
-                    change: 'big_laugh',
-                    box: imageInfo.coordinates[1],
-                },
-                { number: 2, change: 'sad', box: imageInfo.coordinates[2] },
-            ];
+            const cropInfo = selectedFaces;
+            console.log(selectedFaces);
+            // const cropInfo = [
+            //     { number: 0, change: 'pouting', box: imageInfo.coordinates[0] },
+            //     {
+            //         number: 1,
+            //         change: 'big_laugh',
+            //         box: imageInfo.coordinates[1],
+            //     },
+            //     { number: 2, change: 'sad', box: imageInfo.coordinates[2] },
+            // ];
             let timerInterval;
             Swal.fire({
                 title: 'Analyzing Face Detection...',
@@ -132,27 +128,12 @@ const CropImage = () => {
         }
     };
 
-    const handleAddOption = (option) => {
-        if (addCount < minNum) {
-            setAddOptionComponents((prev) => [...prev, option]);
-            console.log(addOptionComponents);
-        }
-    };
-
-    const handleRemoveOption = (number) => {
-        setAddOptionComponents((prev) =>
-            prev.filter((option) => option.number !== number)
-        );
-        setAddCount(addCount - 1);
-    };
-
     const handleAdd = () => {
-        setAddCount((prev) => prev + 1);
-        handleAddOption({
-            number: addCount,
-            change: '', // Set the appropriate initial value
-            box: [0, 0, 0, 0], // Set the appropriate initial value
-        });
+        setChangeModalOpen(true);
+    };
+
+    const handleSaveOption = (option) => {
+        setSelectedFaces((prev) => [...prev, option]);
     };
 
     useEffect(() => {
@@ -168,16 +149,23 @@ const CropImage = () => {
                     alt='image'
                 />
             )}
-            {addOptionComponents.map((option) => (
-                <Option
-                    key={option.number}
-                    onAdd={(newOption) => handleAddOption(newOption)}
-                    onRemove={(number) => handleRemoveOption(number)}
-                    length={imageInfo.coordinates.length}
-                />
-            ))}
+            {changeModalOpen && (
+                <Change setChangeModalOpen={setChangeModalOpen} onSave={handleSaveOption} imageInfo={imageInfo}/>
+            )}
+            {selectedFaces.length > 0 && (
+                <SelectedFacesContainer>
+                    <h2>Selected Info</h2>
+                    <ul>
+                        {selectedFaces.map((face) => (
+                            <li key={face.number}>
+                                Number: {face.number} Mode: {face.change}
+                            </li>
+                        ))}
+                    </ul>
+                </SelectedFacesContainer>
+            )}
             <ButtonContainer>
-                {addCount < minNum && (
+                {!changeModalOpen && (
                     <UploadButton onClick={handleAdd}>Add Option</UploadButton>
                 )}
                 <UploadButton onClick={handleSubmit}>Change Image</UploadButton>
@@ -187,6 +175,29 @@ const CropImage = () => {
 };
 
 export default CropImage;
+
+const SelectedFacesContainer = styled.div`
+    margin-top: 1rem;
+    border: 1px solid #ccc;
+    padding: 1rem;
+    border-radius: 4px;
+
+    h2 {
+        font-size: 1.2rem;
+        margin-bottom: 0.5rem;
+    }
+
+    ul {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+    }
+
+    li {
+        margin-bottom: 0.5rem;
+        
+    }
+`;
 
 const FileUploadContainer = styled.div`
     display: flex;
