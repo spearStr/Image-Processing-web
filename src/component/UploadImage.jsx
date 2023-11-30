@@ -3,6 +3,8 @@ import '../styles/UploadImage.css';
 import axios from '../api/axios';
 import styled from 'styled-components';
 import { useNavigate } from 'react-router-dom';
+import Swal from 'sweetalert2';
+import requests from '../api/requests';
 
 const UploadImage = () => {
     const [imageSrc, setImageSrc] = useState(null);
@@ -36,17 +38,40 @@ const UploadImage = () => {
             // FormData : create object and add image
             const formData = new FormData();
             formData.append('file', dataURItoBlob(imageSrc), 'example.png');
-
-            // upload image to server
-            const response = await axios.post('/upload', formData, {
-                headers: {
-                    "Content-Type" : "multipart/form-data",
-                } 
+            let timerInterval;
+            Swal.fire({
+                title: 'Analyzing Face Detection...',
+                html: '<b></b>ms left!!',
+                timer: 2000,
+                timerProgressBar: true,
+                didOpen: () => {
+                    Swal.showLoading();
+                    const timer = Swal.getPopup().querySelector('b');
+                    timerInterval = setInterval(() => {
+                        timer.textContent = `${Swal.getTimerLeft()}`;
+                    }, 100);
+                },
+                willClose: () => {
+                    clearInterval(timerInterval);
+                },
             });
-
+            // upload image to server
+            const response = await axios.post(requests.fetchUpload, formData, {
+                headers: {
+                    'Content-Type': 'multipart/form-data',
+                },
+            });
+            
             // print uploaded image's URL to console
-            console.log('Uploaded Image URL:', typeof(response.data.Image));
-            navigate('/crop', { state: { image: response.data.Image, coordinates: response.data.boxes } });
+            console.log('Uploaded Image URL:', response);
+            navigate('/crop', {
+                state: {
+                    image: response.data.Image,
+                    coordinates: response.data.boxes,
+                    name: response.data.crop_images_dir,
+                    file_id: response.data.id,
+                },
+            });
         } catch (error) {
             console.error('Image upload error', error);
         }
@@ -84,7 +109,7 @@ const UploadImage = () => {
                 type='file'
                 onChange={(e) => readURL(e.target)}
                 accept='image/*'
-                encType="multipart/form-data"
+                encType='multipart/form-data'
             />
             <DragText>
                 <DragTextH3>
@@ -213,8 +238,8 @@ const DragTextH3 = styled.h3`
 `;
 
 const FileUploadImage = styled.img`
-    max-height: 15rem;
-    max-width: 15rem;
+    max-height: 30rem;
+    max-width: 25rem;
     margin: auto;
     padding: 1rem;
 `;

@@ -3,6 +3,7 @@ import styled from 'styled-components';
 import { Routes, Route } from 'react-router-dom';
 import Home from './pages/Home';
 import Crop from './pages/Crop';
+import Result from './pages/Result';
 
 function App() {
     return (
@@ -12,6 +13,7 @@ function App() {
                     <Routes>
                         <Route path='/' element={<Home />} />
                         <Route path='/crop' element={<Crop />} />
+                        <Route path='/result' element={<Result />} />
                     </Routes>
                 </InnerContainer>
             </OutterContainer>

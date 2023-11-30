@@ -1,16 +1,17 @@
 import React from 'react';
 import { styled } from 'styled-components';
 import Header from '../component/Header';
-import UploadImage from '../component/UploadImage';
+import ResultImage from '../component/ResultImage';
 
-export default function Home() {
+export default function Result() {
     return (
         <HomeContainer>
             <Header />
             <InfoMessage>
-                Upload an image that clearly shows the person's face
+                <p>Outcome</p>
+                <p>If you want to test another image, Retry</p>
             </InfoMessage>
-            <UploadImage />
+            <ResultImage />
         </HomeContainer>
     );
 }

@@ -8,8 +8,7 @@ export default function Crop() {
         <HomeContainer>
             <Header />
             <InfoMessage>
-                <p>1. Choose A Face (Maximum 3)</p>
-                <p>2. Select Menu</p>
+                <p>Write A Number You Want To Change (Maximum 3) And Select Menu</p>
             </InfoMessage>
             <CropImage />
         </HomeContainer>
@@ -22,4 +21,7 @@ const HomeContainer = styled.div`
     text-align: center;
 `;
 
-const InfoMessage = styled.p``;
+const InfoMessage = styled.p`
+    font-size: larger;
+    font-weight: 600;
+`;

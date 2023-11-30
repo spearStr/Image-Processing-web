@@ -4,12 +4,43 @@ import axios from '../api/axios';
 import styled from 'styled-components';
 import { useNavigate } from 'react-router-dom';
 import { useLocation } from 'react-router-dom';
+import Swal from 'sweetalert2';
+import requests from '../api/requests';
+import Change from '../modal/Change';
+import Option from './Option';
+
+function findIndexOfRectangle(rectangles, point) {
+    // rectangles: [[x1, y1, x2, y2], [x1, y1, x2, y2], ...], point: [x, y]
+    for (let i = 0; i < rectangles.length; i++) {
+        const rectangle = rectangles[i];
+
+        const x1 = rectangle[0];
+        const y1 = rectangle[1];
+        const x2 = rectangle[2];
+        const y2 = rectangle[3];
+
+        const x = point[0];
+        const y = point[1];
+
+        if (x >= x1 && x <= x2 && y >= y1 && y <= y2) {
+            return i;
+        }
+    }
+
+    return -1;
+}
 
 const CropImage = () => {
-    const [imageSrc, setImageSrc] = useState(null);
     const [image, setImage] = useState(null);
+    const [selectedFaces, setSelectedFaces] = useState([]);
+    const [selectedFaceIndex, setSelectedFaceIndex] = useState(null);
+    const [addOptionComponents, setAddOptionComponents] = useState([]);
+    const [addCount, setAddCount] = useState(0);
+
     const location = useLocation();
     const imageInfo = { ...location.state };
+    const minNum =
+        3 > imageInfo.coordinates.length ? imageInfo.coordinates.length : 3;
 
     const navigate = useNavigate();
 
@@ -24,47 +55,104 @@ const CropImage = () => {
         const byteArray = new Uint8Array(byteNumbers);
         return new Blob([byteArray], { type: 'image/jpeg' }); // Adjust the type according to your image format
     };
-    const readURL = (input) => {
-        if (input.files && input.files[0]) {
-            const reader = new FileReader();
 
-            reader.onload = function (e) {
-                setImageSrc(e.target.result);
-            };
+    // const handleImageClick = (event) => {
+    //     const clickX = event.clientX - event.target.offsetLeft;
+    //     const clickY = event.clientY - event.target.offsetTop;
+    //     // coordinates console
+    //     console.log(clickX);
+    //     console.log(clickY);
+    //     console.log(imageInfo.coordinates);
 
-            reader.readAsDataURL(input.files[0]);
-        }
-    };
+    //     // Check if the click is inside any of the selected faces
+    //     const clickedFaceIndex = findIndexOfRectangle(imageInfo.coordinates, [
+    //         clickX,
+    //         clickY,
+    //     ]);
+    //     console.log('answer', clickedFaceIndex);
+    //     if (clickedFaceIndex !== -1) {
+    //         setSelectedFaceIndex(clickedFaceIndex);
+    //     }
+
+    //     if (selectedFaces.length < 3) {
+    //         setSelectedFaces((prevFaces) => [
+    //             ...prevFaces,
+    //             {
+    //                 number: selectedFaceIndex,
+    //                 file_id: imageInfo.name[selectedFaceIndex],
+    //             },
+    //         ]);
+    //         console.log('selectedFaces', selectedFaces);
+    //     }
+    // };
 
     const handleSubmit = async () => {
         try {
-            // FormData : create object and add image
-            const formData = new FormData();
-            formData.append('image', dataURItoBlob(imageSrc));
-
-            // upload image to server
-            const response = await axios.post('/upload', formData);
+            //const cropInfo = selectedFaces;
+            const cropInfo = [
+                { number: 0, change: 'pouting', box: imageInfo.coordinates[0] },
+                {
+                    number: 1,
+                    change: 'big_laugh',
+                    box: imageInfo.coordinates[1],
+                },
+                { number: 2, change: 'sad', box: imageInfo.coordinates[2] },
+            ];
+            let timerInterval;
+            Swal.fire({
+                title: 'Analyzing Face Detection...',
+                html: '<b></b>ms left!!',
+                timer: 4000,
+                timerProgressBar: true,
+                didOpen: () => {
+                    Swal.showLoading();
+                    const timer = Swal.getPopup().querySelector('b');
+                    timerInterval = setInterval(() => {
+                        timer.textContent = `${Swal.getTimerLeft()}`;
+                    }, 100);
+                },
+                willClose: () => {
+                    clearInterval(timerInterval);
+                },
+            });
+            const response = await axios.post(
+                `${requests.fetchChange}/${imageInfo.file_id}`,
+                cropInfo
+            );
 
             // print uploaded image's URL to console
-            console.log('Uploaded Image URL:', response.data.imageUrl);
-            navigate('/crop');
+            console.log('Uploaded Image URL:', response.data.change);
+            navigate('/result', {
+                state: {
+                    image: response.data.change,
+                },
+            });
         } catch (error) {
             console.error('Image upload error', error);
         }
     };
 
-    // Transfrom Data URI to Blob function
-    const dataURItoBlob = (dataURI) => {
-        const byteString = atob(dataURI.split(',')[1]);
-        const mimeString = dataURI.split(',')[0].split(':')[1].split(';')[0];
-        const ab = new ArrayBuffer(byteString.length);
-        const ia = new Uint8Array(ab);
-
-        for (let i = 0; i < byteString.length; i++) {
-            ia[i] = byteString.charCodeAt(i);
+    const handleAddOption = (option) => {
+        if (addCount < minNum) {
+            setAddOptionComponents((prev) => [...prev, option]);
+            console.log(addOptionComponents);
         }
+    };
 
-        return new Blob([ab], { type: mimeString });
+    const handleRemoveOption = (number) => {
+        setAddOptionComponents((prev) =>
+            prev.filter((option) => option.number !== number)
+        );
+        setAddCount(addCount - 1);
+    };
+
+    const handleAdd = () => {
+        setAddCount((prev) => prev + 1);
+        handleAddOption({
+            number: addCount,
+            change: '', // Set the appropriate initial value
+            box: [0, 0, 0, 0], // Set the appropriate initial value
+        });
     };
 
     useEffect(() => {
@@ -80,7 +168,20 @@ const CropImage = () => {
                     alt='image'
                 />
             )}
-            <UploadButton onClick={handleSubmit}>Submit Image</UploadButton>
+            {addOptionComponents.map((option) => (
+                <Option
+                    key={option.number}
+                    onAdd={(newOption) => handleAddOption(newOption)}
+                    onRemove={(number) => handleRemoveOption(number)}
+                    length={imageInfo.coordinates.length}
+                />
+            ))}
+            <ButtonContainer>
+                {addCount < minNum && (
+                    <UploadButton onClick={handleAdd}>Add Option</UploadButton>
+                )}
+                <UploadButton onClick={handleSubmit}>Change Image</UploadButton>
+            </ButtonContainer>
         </FileUploadContainer>
     );
 };
@@ -139,20 +240,15 @@ const FileUploadInput = styled.input`
     cursor: pointer;
 `;
 
-const ImageUploadWrap = styled.div`
-    margin-bottom: 1rem;
-    border: 4px dashed #1fb264;
-    position: relative;
-
-    &:hover {
-        background-color: #1fb264;
-        border: 4px dashed #ffffff;
-    }
-`;
-
 const FileUploadImage = styled.img`
-    max-height: 15rem;
-    max-width: 15rem;
+    max-height: 30rem;
+    max-width: 25rem;
     margin: auto;
     padding: 1rem;
+`;
+
+const ButtonContainer = styled.div`
+    display: flex;
+    gap: 2rem;
+    justify-content: space-between;
 `;

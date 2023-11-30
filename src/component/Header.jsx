@@ -4,7 +4,7 @@ import styled from 'styled-components';
 const Header = () => {
     return (
         <HeaderContainer>
-            <p>Image Processing</p>
+            <TitleBox>Image Processing</TitleBox>
         </HeaderContainer>
     );
 };
@@ -19,3 +19,8 @@ const HeaderContainer = styled.div`
     justify-content: center;
     align-items: center;
 `;
+
+const TitleBox = styled.p`
+    font-size: xx-large;
+    font-weight: 800;
+`
