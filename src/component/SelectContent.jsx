@@ -2,8 +2,7 @@ import React, { useState } from 'react';
 import styled from 'styled-components';
 
 const SelectContent = ({ onChange, mode }) => {
-    const defaultMode = 'big_laugh';
-    const [selectedMode, setSelectedMode] = useState(defaultMode);
+    const [selectedMode, setSelectedMode] = useState('');
 
     const modeArray = [
         { key: 'Big Laugh', value: 'big_laugh' },
@@ -12,6 +11,8 @@ const SelectContent = ({ onChange, mode }) => {
         { key: 'Pouting', value: 'pouting' },
         { key: 'Open Eyes', value: 'open_eyes' },
         { key: 'Mosaic', value: 'mosaic' },
+        { key: 'Brightness', value: 'brightness' },
+        { key: 'Blur', value: 'blur' },
     ];
 
     const handleSelectChange = (e) => {
@@ -22,11 +23,9 @@ const SelectContent = ({ onChange, mode }) => {
 
     return (
         <SelectBox onChange={handleSelectChange} value={selectedMode}>
-            {!selectedMode && (
-                <SelectOption value="" disabled hidden>
-                    Select an option
-                </SelectOption>
-            )}
+            <SelectOption value="" disabled hidden>
+                Select Mode
+            </SelectOption>
             {modeArray.map((item) => (
                 <SelectOption key={item.key} value={item.value}>
                     {item.key}

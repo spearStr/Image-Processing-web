@@ -4,147 +4,102 @@ import { styled } from 'styled-components';
 import requests from '../api/requests';
 import { IoClose } from 'react-icons/io5';
 import Swal from 'sweetalert2';
+import SelectNumber from '../component/SelectNumber';
+import SelectContent from '../component/SelectContent';
 
-export default function Change({ name }) {
-    const handleSave = () => {
-        // setChangeModalOpen(false);
+const Change = ({ setChangeModalOpen, onSave, imageInfo }) => {
+    const [mode, setMode] = useState('');
+    const [number, setNumber] = useState(0);
+
+    const handleAddClick = () => {
+        const newInfo = {
+            number: number,
+            change: mode,
+            box: imageInfo.coordinates[number],
+        };
+        if (newInfo.number === 0 || newInfo.change === '') {
+            Swal.fire({
+                icon: 'error',
+                title: 'Invalid Value',
+                text: 'Select A Value Both Number and Mode Correctly',
+            });
+            console.log("invalid");
+        } else {
+            onSave(newInfo);
+            setMode('');
+            setChangeModalOpen(false);
+            console.log('newInfo', newInfo);
+        }
+    };
+
+    const handleSelectMode = (selectedMode) => {
+        setMode(selectedMode);
+    };
+
+    const handleNumber = (selectedNumber) => {
+        setNumber(selectedNumber);
+        console.log(selectedNumber);
     };
 
     return (
-        <ModalContainer>
-            <ModalTitle>
-                <ModalDetail>ID : {name}</ModalDetail>
+        <AddOptionContainer>
+            <InputContainer>
+                <InputLabel>Number</InputLabel>
+                <SelectNumber
+                    onChange={handleNumber}
+                    length={imageInfo.coordinates.length}
+                />
+            </InputContainer>
+            <InputContainer>
+                <InputLabel>Mode</InputLabel>
+                <SelectContent onChange={handleSelectMode} mode={mode} />
+            </InputContainer>
+            <ButtonContainer>
+                <ActionButton onClick={handleAddClick}>Save</ActionButton>
                 <IoClose
                     size={'2rem'}
-                    // onClick={() => setChangeModalOpen(false)}
+                    onClick={() => setChangeModalOpen(false)}
                 />
-            </ModalTitle>
-            <Menu>
-                <MenuItem>Big Laugh</MenuItem>
-                <MenuItem>Pouting</MenuItem>
-                <MenuItem>Sad</MenuItem>
-                <MenuItem>Smile</MenuItem>
-                <MenuItem>Open Eyes</MenuItem>
-                <MenuItem>Mosaic</MenuItem>
-            </Menu>
-            <UploadButton onClick={handleSave}>Save</UploadButton>
-        </ModalContainer>
+            </ButtonContainer>
+        </AddOptionContainer>
     );
-}
+};
 
-const ModalContainer = styled.div`
-    position: relative;
-    background-color: grey;
-    border-radius: 0.5rem;
-    transition: all 400ms ease-in-out 2s;
-    padding: 2rem;
-`;
+export default Change;
 
-const ModalTitle = styled.div`
+
+const AddOptionContainer = styled.div`
     display: flex;
-    justify-content: space-between;
-    gap: 3rem;
-    align-items: center;
-    color: black;
-`;
-
-const ModalDetail = styled.p`
-    font-weight: 600;
-    font-size: 1.5rem;
-`;
-
-const InputList = styled.div`
-    display: flex;
-    flex-direction: column;
+    margin-bottom: 1rem;
     gap: 1rem;
-    margin-top: 1rem;
+    justify-content: center;
+    align-items: center;
+`;
 
+const InputContainer = styled.div`
+    display: flex;
+    margin-bottom: 0.5rem;
+    align-items: center;
+`;
+
+const InputLabel = styled.label`
+    margin-right: 0.5rem;
+    align-items: center;
+`;
+
+const ButtonContainer = styled.div`
+    display: flex;
+    gap: 1rem;
+    align-items: center;
+`;
+
+const ActionButton = styled.button`
     flex: 1;
-    overflow-y: auto;
-    scroll-behavior: smooth;
-    max-height: 60vh;
-
-    &::-webkit-scrollbar {
-        width: 5px;
-    }
-
-    /* &::-webkit-scrollbar-thumb {
-      background-color: gray;
-      border-radius: 1rem;
-  } */
-
-    &::-webkit-scrollbar-track {
-        background-color: white;
-    }
-`;
-
-const InputLabel = styled.div`
-    display: flex;
-    flex-direction: column;
-    font-size: medium;
-    margin: 0.5rem 0;
-    gap: 0.5rem;
-`;
-
-const InputBox = styled.input`
-    border: 0.1rem solid #de496e;
-    border-radius: 0.5rem;
-    height: 2rem;
-    padding: 0 0.5rem;
-`;
-
-const SubmitButton = styled.button`
-    background-color: #0acf83;
-    color: black;
-    font-size: large;
-    border: 0.1rem solid #0acf83;
-    padding: 0.5rem 1rem;
-    border-radius: 0.5rem;
-
-    &:hover {
-        opacity: 0.7;
-    }
-`;
-
-const Menu = styled.button`
-    display: flex;
-    color: black;
-    background: white;
-    border: 0.1rem solid #3a86ff;
-`;
-
-const MenuItem = styled.button`
-    padding: 0.3rem 1rem;
-    border: 0.5px solid #3a86ff;
-    &:hover {
-        background-color: #3a86ff;
-        opacity: 0.7;
-    }
-`;
-
-const UploadButton = styled.button`
-    width: 100%;
-    margin: 0 0 1rem 0;
-    color: #fff;
+    margin-right: 0.5rem;
     background: #1fb264;
+    color: #fff;
     border: none;
-    padding: 1rem;
+    padding: 0.5rem;
     border-radius: 4px;
-    border-bottom: 4px solid #15824b;
-    transition: all 0.2s ease;
-    outline: none;
-    text-transform: uppercase;
-    font-weight: 700;
-
-    &:hover {
-        background: #1aa059;
-        color: #ffffff;
-        cursor: pointer;
-        transition: all 0.2s ease;
-    }
-
-    &:active {
-        border: 0;
-        transition: all 0.2s ease;
-    }
+    cursor: pointer;
 `;

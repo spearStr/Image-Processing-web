@@ -2,28 +2,32 @@ import React, { useState } from 'react';
 import styled from 'styled-components';
 
 const SelectNumber = ({ onChange, length }) => {
-    const [selectedNumber, setSelectedNumber] = useState(0);
+  const [selectedNumber, setSelectedNumber] = useState('');
 
-    const numbers = Array.from({ length: length }, (_, index) => index + 1);
+  const numbers = Array.from({ length }, (_, index) => index + 1);
 
-    const handleSelectChange = (e) => {
-        const selectedValue = parseInt(e.target.value, 10);
-        setSelectedNumber(selectedValue);
-        onChange(selectedValue);
-    };
+  const handleNumberChange = (event) => {
+    const newNumber = parseInt(event.target.value, 10);
+    setSelectedNumber(newNumber);
+    onChange(newNumber);
+  };
 
-    return (
-        <SelectBox onChange={handleSelectChange} value={selectedNumber}>
-            {numbers.map((number) => (
-                <SelectOption key={number} value={number}>
-                    {number}
-                </SelectOption>
-            ))}
-        </SelectBox>
-    );
+  return (
+    <SelectBox value={selectedNumber} onChange={handleNumberChange}>
+      <option value="" disabled hidden>
+        Select Number
+      </option>
+      {numbers.map((number) => (
+        <option key={number} value={number}>
+          {number}
+        </option>
+      ))}
+    </SelectBox>
+  );
 };
 
 export default SelectNumber;
+
 
 const SelectBox = styled.select`
     display: flex;
