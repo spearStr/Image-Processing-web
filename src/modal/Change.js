@@ -15,7 +15,7 @@ const Change = ({ setChangeModalOpen, onSave, imageInfo, selectedFaces }) => {
             change: mode,
             box: imageInfo.coordinates[number - 1],
         };
-        if (newInfo.change === '') {
+        if (newInfo.number === -1 || newInfo.change === '') {
             Swal.fire({
                 icon: 'error',
                 title: 'Invalid Value',
