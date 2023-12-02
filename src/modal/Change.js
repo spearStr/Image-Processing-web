@@ -11,9 +11,9 @@ const Change = ({ setChangeModalOpen, onSave, imageInfo, selectedFaces }) => {
 
     const handleAddClick = () => {
         const newInfo = {
-            number: number,
+            number: number - 1,
             change: mode,
-            box: imageInfo.coordinates[number],
+            box: imageInfo.coordinates[number - 1],
         };
         if (newInfo.number === 0 || newInfo.change === '') {
             Swal.fire({

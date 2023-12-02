@@ -9,27 +9,6 @@ import Swal from 'sweetalert2';
 import requests from '../api/requests';
 import Change from '../modal/Change';
 
-function findIndexOfRectangle(rectangles, point) {
-    // rectangles: [[x1, y1, x2, y2], [x1, y1, x2, y2], ...], point: [x, y]
-    for (let i = 0; i < rectangles.length; i++) {
-        const rectangle = rectangles[i];
-
-        const x1 = rectangle[0];
-        const y1 = rectangle[1];
-        const x2 = rectangle[2];
-        const y2 = rectangle[3];
-
-        const x = point[0];
-        const y = point[1];
-
-        if (x >= x1 && x <= x2 && y >= y1 && y <= y2) {
-            return i;
-        }
-    }
-
-    return -1;
-}
-
 const CropImage = () => {
     const [image, setImage] = useState(null);
     const [selectedFaces, setSelectedFaces] = useState([]);
@@ -53,36 +32,6 @@ const CropImage = () => {
         const byteArray = new Uint8Array(byteNumbers);
         return new Blob([byteArray], { type: 'image/jpeg' }); // Adjust the type according to your image format
     };
-
-    // const handleImageClick = (event) => {
-    //     const clickX = event.clientX - event.target.offsetLeft;
-    //     const clickY = event.clientY - event.target.offsetTop;
-    //     // coordinates console
-    //     console.log(clickX);
-    //     console.log(clickY);
-    //     console.log(imageInfo.coordinates);
-
-    //     // Check if the click is inside any of the selected faces
-    //     const clickedFaceIndex = findIndexOfRectangle(imageInfo.coordinates, [
-    //         clickX,
-    //         clickY,
-    //     ]);
-    //     console.log('answer', clickedFaceIndex);
-    //     if (clickedFaceIndex !== -1) {
-    //         setSelectedFaceIndex(clickedFaceIndex);
-    //     }
-
-    //     if (selectedFaces.length < 3) {
-    //         setSelectedFaces((prevFaces) => [
-    //             ...prevFaces,
-    //             {
-    //                 number: selectedFaceIndex,
-    //                 file_id: imageInfo.name[selectedFaceIndex],
-    //             },
-    //         ]);
-    //         console.log('selectedFaces', selectedFaces);
-    //     }
-    // };
 
     const handleSubmit = async () => {
         try {
