@@ -4,7 +4,7 @@ import styled from 'styled-components';
 const SelectNumber = ({ onChange, length }) => {
   const [selectedNumber, setSelectedNumber] = useState('');
 
-  const numbers = Array.from({ length }, (_, index) => index + 1);
+  const numbers = Array.from({ length }, (_, index) => index);
 
   const handleNumberChange = (event) => {
     const newNumber = parseInt(event.target.value, 10);

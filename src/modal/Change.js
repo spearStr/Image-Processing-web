@@ -7,13 +7,13 @@ import SelectContent from '../component/SelectContent';
 
 const Change = ({ setChangeModalOpen, onSave, imageInfo, selectedFaces }) => {
     const [mode, setMode] = useState('');
-    const [number, setNumber] = useState(0);
+    const [number, setNumber] = useState(-1);
 
     const handleAddClick = () => {
         const newInfo = {
-            number: number - 1,
+            number: number,
             change: mode,
-            box: imageInfo.coordinates[number - 1],
+            box: imageInfo.coordinates[number],
         };
         if (newInfo.number === -1 || newInfo.change === '') {
             Swal.fire({
